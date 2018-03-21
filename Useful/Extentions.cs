@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Useful.Collections;
 
@@ -110,6 +111,20 @@ namespace Useful
 		{
 			double epsilon = Math.Max(Math.Abs(x), Math.Abs(y)) * relTol;
 			return Math.Abs(x - y) <= Math.Max(epsilon, absTol);
+		}
+
+		public static Dictionary<TKey, TValue> ToDict<TKey, TValue>(this string source)
+		{
+			var dict = new Dictionary<TKey, TValue>();
+			var regex = new Regex(@"(.+):(.+)");
+			source = source.Replace('.', ',');
+			string[] pairs = source.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			foreach (string wordPair in pairs)
+			{
+				Match pair = regex.Match(wordPair);
+				dict[pair.Groups[1].Value.To<TKey>()] = pair.Groups[2].Value.To<TValue>();
+			}
+			return dict;
 		}
 	}
 }
