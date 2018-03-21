@@ -79,13 +79,21 @@ namespace Useful.Collections
 		private readonly Func<TValue> _factory;
 
 		public DefaultDict() : this(() => default)
-		{}
+		{
+		}
 
 		public DefaultDict(Func<TValue> factory) : this(new Dictionary<TKey, TValue>(), factory)
-		{}
+		{
+		}
+
+		public DefaultDict(IDictionary<TKey, TValue> dictionary) : this(dictionary, () => default)
+		{
+		}
 
 		public DefaultDict(IDictionary<TKey, TValue> dictionary, Func<TValue> factory) : base(dictionary)
-			=> _factory = factory;
+		{
+			_factory = factory;
+		}
 
 		public new TValue this[TKey key]
 		{
