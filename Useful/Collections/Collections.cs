@@ -46,19 +46,26 @@ namespace Useful.Collections
 		    return result;
 	    }
 
-	    public static MultiSet<T> operator &(MultiSet<T> lhs, MultiSet<T> rhs) => BinLogic(lhs, rhs, Math.Min);
-
-	    public static MultiSet<T> operator |(MultiSet<T> lhs, MultiSet<T> rhs) => BinLogic(lhs, rhs, Math.Max);
-
-	    private static MultiSet<T> BinLogic(MultiSet<T> lhs, MultiSet<T> rhs, Func<int, int, int> select)
+	    public static MultiSet<T> operator &(MultiSet<T> lhs, MultiSet<T> rhs)
 	    {
-			SwapIfLeftLess(ref lhs, ref rhs);
+		    SwapIfLeftLess(ref lhs, ref rhs);
 		    var result = new MultiSet<T>();
 		    foreach (KeyValuePair<T, int> pair in rhs._multiSet)
 			    if (lhs._multiSet.TryGetValue(pair.Key, out int value))
-				    result._multiSet[pair.Key] = select(value, pair.Value);
+				    result._multiSet[pair.Key] = Math.Min(value, pair.Value);
 		    return result;
 		}
+
+	    public static MultiSet<T> operator |(MultiSet<T> lhs, MultiSet<T> rhs)
+	    {
+		    SwapIfLeftLess(ref lhs, ref rhs);
+		    var result = new MultiSet<T>(lhs._multiSet);
+		    foreach (KeyValuePair<T, int> pair in rhs._multiSet)
+			    if (!lhs._multiSet.TryGetValue(pair.Key, out int value) || value < pair.Value)
+					result._multiSet[pair.Key] = pair.Value;
+
+		    return result;
+	    }
 
 		private static void SwapIfLeftLess(ref MultiSet<T> lhs, ref MultiSet<T> rhs)
 	    {
