@@ -116,13 +116,14 @@ namespace Useful
 		public static Dictionary<TKey, TValue> ToDict<TKey, TValue>(this string source)
 		{
 			var dict = new Dictionary<TKey, TValue>();
-			var regex = new Regex(@"(.+):(.+)");
+			var (key, value) = ("key", "value");
+			var regex = new Regex($@"(?'{key}'.+):(?'{value}'.+)");
 			source = source.Replace('.', ',');
 			string[] pairs = source.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (string wordPair in pairs)
 			{
 				Match pair = regex.Match(wordPair);
-				dict[pair.Groups[1].Value.To<TKey>()] = pair.Groups[2].Value.To<TValue>();
+				dict[pair.Groups[key].Value.To<TKey>()] = pair.Groups[value].Value.To<TValue>();
 			}
 			return dict;
 		}
