@@ -143,7 +143,11 @@ namespace Useful
 
 		public static IEnumerable<T> Repeat<T>(this T item, int count) => Enumerable.Repeat(item, count);
 
-		public static void Print<T>(this T line) => Console.WriteLine(line);
+		public static void Print<T>(this IEnumerable<T> source, string sep = ", ", string end = "\n")
+		{
+			Console.Write(source.StringLine(sep));
+			Console.Write(end);
+		}
 
 		public static bool IsClose(this double x, double y, double relTol = 1e-09, double absTol = 1e-12)
 		{
