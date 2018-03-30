@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -24,6 +25,42 @@ namespace Useful
 		{
 			for (int i = 0; i < count; i++)
 				yield return factory();
+		}
+
+		public static TimeSpan Bench(Action func, int runs = 1)
+		{
+			Stopwatch sw = Stopwatch.StartNew();
+			for (int i = 0; i < runs; i++)
+			{
+				func();
+			}
+			sw.Stop();
+			return sw.Elapsed;
+		}
+
+		public static IEnumerable<T[]> Permutations<T>(IEnumerable<T> source)
+		{
+			T[] array = source.ToArray();
+			int last = array.Length - 1;
+			return Permutations(array, 0, last);
+		}
+
+		static IEnumerable<T[]> Permutations<T>(T[] source, int first, int last)
+		{
+			if (first == last)
+			{
+				var dest = new T[source.Length];
+				source.CopyTo(dest, 0);
+				yield return dest;
+			}
+			else
+				for (int i = first; i <= last; i++)
+				{
+					Use.Swap(ref source[first], ref source[i]);
+					foreach (T[] mutation in Permutations(source, first + 1, last))
+						yield return mutation;
+					Use.Swap(ref source[first], ref source[i]);
+				}
 		}
 	}
 
@@ -61,13 +98,15 @@ namespace Useful
 
 		public static IEnumerable<T> Step<T>(this IEnumerable<T> source, int step)
 		{
-			IEnumerator<T> enumerator = source.GetEnumerator();
-			while (enumerator.MoveNext())
+			using (IEnumerator<T> enumerator = source.GetEnumerator())
 			{
-				yield return enumerator.Current;
-				for (int i = 0; i < step - 1; ++i)
-					if (!enumerator.MoveNext())
-						yield break;
+				while (enumerator.MoveNext())
+				{
+					yield return enumerator.Current;
+					for (int i = 0; i < step - 1; ++i)
+						if (!enumerator.MoveNext())
+							yield break;
+				}
 			}
 		}
 
@@ -90,7 +129,7 @@ namespace Useful
 			return source.OrderBy(_ => rnd.Next());
 		}
 
-		public static IList<T> ShuffleInPlace<T>(this IList<T> list)
+		public static void ShuffleInPlace<T>(this IList<T> list)
 		{
 			Random rnd = new Random();
 			for (int i = 0; i < list.Count; i++)
@@ -100,14 +139,13 @@ namespace Useful
 				list[i] = list[j];
 				list[j] = tmp;
 			}
-			return list;
 		}
 
 		public static IEnumerable<T> Repeat<T>(this T item, int count) => Enumerable.Repeat(item, count);
 
 		public static void Print<T>(this T line) => Console.WriteLine(line);
 
-		public static bool IsClose(this double x, double y, double relTol = 1e-09, double absTol = 0.0)
+		public static bool IsClose(this double x, double y, double relTol = 1e-09, double absTol = 1e-12)
 		{
 			double epsilon = Math.Max(Math.Abs(x), Math.Abs(y)) * relTol;
 			return Math.Abs(x - y) <= Math.Max(epsilon, absTol);
@@ -116,14 +154,13 @@ namespace Useful
 		public static Dictionary<TKey, TValue> ToDict<TKey, TValue>(this string source)
 		{
 			var dict = new Dictionary<TKey, TValue>();
-			var (key, value) = ("key", "value");
-			var regex = new Regex($@"(?'{key}'.+):(?'{value}'.+)");
+			var regex = new Regex(@"(?'key'.+):(?'value'.+)");
 			source = source.Replace('.', ',');
 			string[] pairs = source.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 			foreach (string wordPair in pairs)
 			{
 				Match pair = regex.Match(wordPair);
-				dict[pair.Groups[key].Value.To<TKey>()] = pair.Groups[value].Value.To<TValue>();
+				dict[pair.Groups["key"].Value.To<TKey>()] = pair.Groups["value"].Value.To<TValue>();
 			}
 			return dict;
 		}
