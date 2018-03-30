@@ -145,8 +145,7 @@ namespace Useful
 
 		public static void Print<T>(this IEnumerable<T> source, string sep = ", ", string end = "\n")
 		{
-			Console.Write(source.StringLine(sep));
-			Console.Write(end);
+			Console.Write(source.StringLine(sep) + end);
 		}
 
 		public static bool IsClose(this double x, double y, double relTol = 1e-09, double absTol = 1e-12)
